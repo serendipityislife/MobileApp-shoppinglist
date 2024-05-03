@@ -1,43 +1,65 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"
-import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
 
 const appSettings = {
-    databaseURL: "https://playground-eaa33-default-rtdb.europe-west1.firebasedatabase.app/"
+    databaseURL: "https://realtime-database-674dc-default-rtdb.europe-west1.firebasedatabase.app/"
 }
 
 const app = initializeApp(appSettings)
 const database = getDatabase(app)
-const newsStoriesInDB = ref(database, "newsStories")
+const shoppingListInDB = ref(database, "shoppingList")
 
-const storiesEl = document.getElementById("stories")
+const inputFieldEl = document.getElementById("input-field")
+const addButtonEl = document.getElementById("add-button")
+const shoppingListEl = document.getElementById("shopping-list")
 
-onValue(newsStoriesInDB, function(snapshot) {
-    let newsStoriesArray = Object.entries(snapshot.val())
+addButtonEl.addEventListener("click", function() {
+    let inputValue = inputFieldEl.value
     
-    storiesEl.innerHTML = ""
+    push(shoppingListInDB, inputValue)
     
-    for (let i = 0; i < newsStoriesArray.length; i++) {
-        let currentStory = newsStoriesArray[i]
+    clearInputFieldEl()
+})
+
+onValue(shoppingListInDB, function(snapshot) {
+    if (snapshot.exists()) {
+        let itemsArray = Object.entries(snapshot.val())
+    
+        clearShoppingListEl()
         
-        appendStoryToStoriesEl(currentStory)
+        for (let i = 0; i < itemsArray.length; i++) {
+            let currentItem = itemsArray[i]
+            let currentItemID = currentItem[0]
+            let currentItemValue = currentItem[1]
+            
+            appendItemToShoppingListEl(currentItem)
+        }    
+    } else {
+        shoppingListEl.innerHTML = "No items here... yet"
     }
 })
 
-function appendStoryToStoriesEl(story) {
-    let storyID = story[0]
-    let storyTitle = story[1]
+function clearShoppingListEl() {
+    shoppingListEl.innerHTML = ""
+}
+
+function clearInputFieldEl() {
+    inputFieldEl.value = ""
+}
+
+function appendItemToShoppingListEl(item) {
+    let itemID = item[0]
+    let itemValue = item[1]
     
-    let newEl = document.createElement("div")
+    let newEl = document.createElement("li")
     
-    newEl.classList.add("story")
+    newEl.textContent = itemValue
     
-    newEl.textContent = storyTitle
-    
-    newEl.addEventListener("dblclick", function() {
-        let exactLocationOfStoryInDB = ref(database, `newsStories/${storyID}`)
+    newEl.addEventListener("click", function() {
+        let exactLocationOfItemInDB = ref(database, `shoppingList/${itemID}`)
         
-        remove(exactLocationOfStoryInDB)
+        remove(exactLocationOfItemInDB)
     })
     
-    storiesEl.append(newEl)
+    shoppingListEl.append(newEl)
 }
