@@ -13,6 +13,14 @@ const inputFieldEl = document.getElementById("input-field")
 const addButtonEl = document.getElementById("add-button")
 const shoppingListEl = document.getElementById("shopping-list")
 
+// Add event listener for Enter keypress
+inputFieldEl.addEventListener("keypress", function(event) {
+  if (event.keyCode === 13) {
+    event.preventDefault();
+    addButtonEl.click();
+  }
+});
+
 addButtonEl.addEventListener("click", function() {
     let inputValue = inputFieldEl.value
     
